@@ -1,0 +1,51 @@
+<div class="container-fluid">
+    <a href="" ng-click="AddNewToyRow()" class="toy-create-plus"><i class="fa fa-plus fa-3x"></i></a> 
+    
+	<div class="form-group toy-row" ng-show="rowVisible">
+        <div class="row">
+            <div class="col-sm-2"><label> Toy Id: </label></div>
+            <div class="col-sm-5"><input type="text" ng-model="generateId" class="form-control" disabled="true"></div>
+            <div class="col-sm-1"><input type="checkbox" class="checkbox" ng-model="item.toyid.flag"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2"><label for="toyName"> Toy Name: </label></div>
+            <div class="col-sm-4"><input type="text" id="toyName" ng-model="item.toyname.name" class="form-control">
+            </div>
+            <div class="col-sm-1"><input type="checkbox" class="checkbox" ng-model="item.toyname.flag"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2"><label for="repeatSelect"> Category: </label></div>
+            <div class="col-sm-4">
+                <select name="repeatSelect" id="repeatSelect" ng-model="item.toycategory.category" class="form-control">
+                    <option ng-repeat="category in toyCategory" value="{{category.CategoryName}}">{{category.CategoryName}}</option>
+                </select>
+            </div>
+            <div class="col-sm-1"><input type="checkbox" class="checkbox" ng-model="item.toycategory.flag"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2"><label for="toyPrice">Price (in Rs.): </label></div>
+            <div class="col-sm-2"><input type="text" id="toyPrice" ng-model="item.toyprice.price" required="true" class="form-control">
+            </div>
+            <div class="col-sm-1"><input type="checkbox" class="checkbox" ng-model="item.toyprice.flag"></div>
+        </div>
+	</div>
+    
+    <div class="row toy-row" ng-show="customAttributeRowVisible">
+        <input type="text" placeholder="Enter your custom attribute" ng-model="customAttribute.label" class="form-control attribute">
+        <input type="text" placeholder="Enter your custom value" ng-model="customAttribute.value" class="form-control attribute">
+        <input type="checkbox" class="checkbox" id="checked" ng-model="customAttribute.flag">
+        <button type="button" class="btn btn-primary btn-xs insert-attribute" ng-click="insertCustomAttribute()">Insert</button>
+    </div>
+
+	<div class="row add-toy" ng-show="rowVisible">
+		<button type="button" class="btn btn-primary" ng-click="addCustomAttribute()" ng-disabled = "customAttributeRowVisible">Add Custom Attribute</button>
+        <button type="button" class="btn btn-primary pull-left" ng-click="reset()">Reset</button>
+        <button type="button" class="btn btn-primary" ng-click="AddNewToy()">Add Toy</button>
+	</div>
+    <div class="alert alert-success" ng-show="showSuccessStatus">
+      <strong>Attribute: <b>{{customAttributes.label}}</b> with Value: <b>{{customAttributes.value}}</b> added Successfully</strong>
+    </div>
+</div>

@@ -1,0 +1,192 @@
+var app = angular.module("Dashboard", ['ngRoute']);
+
+app.config(['$routeProvider', function($routeProvider) {
+    $routeProvider
+    .when("/AddNewToyCategory", {
+        templateUrl : '/partials/createToyCategory.html',
+		controller: 'toyDashboardCtrl'
+    })
+    .when("/AddNewToy", {
+        templateUrl : '/partials/createToy.html',
+		controller: 'toyDashboardCtrl'
+    })
+    .when("/tableView", {
+        templateUrl : "/partials/tableView.html",
+		controller: 'tableViewCtrl'
+    });
+}]);
+
+app.controller("toyDashboardCtrl", ['$scope', '$http', function($scope, $http) {
+
+	var rowVisible = false;
+    var customAttributeRowVisible = false;
+    $scope.success = false;
+    $scope.customAttributes = [];
+    $scope.customAttributeArray = [];
+    $scope.counter = 1;
+    //$scope.generateId = '';
+	$scope.item = {
+        "toyid": {
+            "id": '',
+            "flag": false
+        },
+        "toyname": {
+            "name": "",
+            "flag": false
+        },
+        "toycategory": {
+            "category": "",
+            "flag": false
+        },
+        "toyprice": {
+            "price": "",
+            "flag": false
+        },
+        "attributes": []
+	};
+
+    $scope.guid = function() {
+      return $scope.s4() + $scope.s4() + '-' + $scope.s4() + '-' + $scope.s4() + '-' + $scope.s4() + '-' + $scope.s4();
+    }
+
+    $scope.s4 = function() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    $scope.removeAlert = function() {
+        $scope.success = false;
+    }
+
+    $scope.generateId = $scope.guid()
+    console.log($scope.generateId);
+    $scope.customAttribute = {
+        "label": '',
+        "value": '',
+        "flag": false
+    }
+	$scope.savedToyCategories = localStorage.getItem('toyCategory');
+	$scope.toyCategory = (localStorage.getItem('toyCategory')!=='null') ? JSON.parse($scope.savedToyCategories) : 
+		[ {CategoryName: 'Transforming toys',items: []}, {CategoryName: 'Mechanical toys', items: []} ];
+	localStorage.setItem('toyCategory', JSON.stringify($scope.toyCategory));
+
+
+	/**method to create Toy category*/
+	$scope.AddNewToyCategory = function() {
+		$scope.toyCategory.push({
+			CategoryName: $scope.toyCategoryName,
+			items: []
+		});
+		$scope.toyCategoryName = ''; //clear the input after adding
+		localStorage.setItem('toyCategory', JSON.stringify($scope.toyCategory));
+        $scope.success = true;
+	};
+
+	/**method to create Toy Row*/
+	$scope.AddNewToyRow = function() {
+		$scope.rowVisible = true;
+
+	};
+    
+    /**method to create Toy*/
+	$scope.AddNewToy = function() {
+        if($scope.item.toyname.name !== '' && $scope.item.toycategory.category !== '' && $scope.item.toyprice.price !== '' ) {
+    		var toyCategory = JSON.parse(localStorage.getItem('toyCategory'));
+    		angular.forEach(toyCategory, function(value) {
+    			if(value.CategoryName === $scope.item.toycategory.category) {
+                    $scope.item.attributes.push($scope.customAttributes);
+                    $scope.item.toyid.id = $scope.generateId;
+    				value.items.push($scope.item);
+    			}
+    		});
+            $scope.item = ''; //clear the input after adding
+    		localStorage.setItem('toyCategory', JSON.stringify(toyCategory));
+    		$scope.showSuccessStatus = true;
+        } else {
+            alert("Empty details cannot be added..");
+        }
+	};
+    
+    /**Method to add new custom attribute*/
+    $scope.addCustomAttribute = function() {
+        $scope.customAttributeRowVisible = true;
+        $scope.customAttributeArray.push('customAttribute' + $scope.counter);
+        $scope.counter++;
+    };
+    
+    $scope.deleteCustomAttribute = function (index) {
+        $scope.customAttributes.splice(index, 1);
+        $scope.item.customattribute.attribute = '';
+        $scope.item.customattribute.value = '';
+        $scope.item.customattribute.flag = '';
+    };
+
+    $scope.reset = function() {
+        $scope.item = '';
+        $scope.customAttributeRowVisible = '';
+        $scope.customAttributes = [];
+        $scope.customAttributeRowVisible=false;
+        $scope.customAttributeArray = [];
+    };
+
+    $scope.insertCustomAttribute = function() {
+        if($scope.customAttribute.label !== '' && $scope.customAttribute.value !== '') {
+            $scope.customAttributes.push($scope.customAttribute); 
+            $scope.customAttribute = {
+            "label": '',
+            "value": '',
+            "flag": false
+            }
+            $scope.showSuccessStatus = true;
+        } else {
+            alert("Empty custom attribute cannot be added");
+        }
+    }
+
+}]);
+app.controller("tableViewCtrl", ['$scope', '$http', function($scope, $http) {
+	$scope.toyCategory = (localStorage.getItem('toyCategory')!==null) ? JSON.parse(localStorage.getItem('toyCategory')) : [];
+    $scope.toyCategoryBkp = angular.copy($scope.toyCategory);
+    $scope.sortOrder =false;
+    $scope.orderByField = 'toy.toyid.id';
+    $scope.changeTableOrder = function(sortField){
+        $scope.orderByField = sortField;
+        $scope.sortOrder = !$scope.sortOrder;
+    };
+    $scope.showHide = function(key, checkFlag) {
+        var items=[];
+        if(!checkFlag) {
+            $scope.toyCategory = angular.copy($scope.toyCategoryBkp);
+        } else {
+            angular.forEach($scope.toyCategory, function(category) {
+                angular.forEach(category.items, function(item) {
+                    if(item[key].flag) {
+                        items.push(item);
+                    }
+                });
+                category.items=items;
+                items = [];
+            });
+        }
+    };
+
+    $scope.showHideAttribute = function(key, checkFlag) {
+        var items=[];
+        if(!checkFlag) {
+            $scope.toyCategory = angular.copy($scope.toyCategoryBkp);
+        } else {
+            angular.forEach($scope.toyCategory, function(category) {
+                angular.forEach(category.items, function(item) {
+                    angular.forEach(item.attributes[0], function(attribute) {
+                        if(attribute.label===key) {
+                            items.push(item);
+                        }
+                    });
+                });
+                category.items=items;
+                items = [];
+            });
+        }
+    };
+}]);
